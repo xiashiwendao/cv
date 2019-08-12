@@ -10,7 +10,6 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.optimizers import SGD
 
-print("hello2")
 df = pd.read_csv("dataset\\Iris.csv")
 print(df)
 
