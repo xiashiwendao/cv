@@ -35,9 +35,16 @@ def preprocess_input(x):
     # Returns
         Preprocessed Numpy array.
     """
-    pil_image.
+    # 预处理图像用于网络输入, 将图像由RGB格式转为BGR格式
+    for oneDim in x:
+        for twoDim in oneDim:
+            index = 0
+            for rgb in twoDim:
+                twoDim[index] = np.array([rgb[2], rgb[1], rgb[0]])
+                index+=1
 
-
+    return x
+    
 def load_img_as_np_array(path, target_size):
     """从给定文件加载图像,转换图像大小为给定target_size,返回32位浮点数numpy数组.
     
