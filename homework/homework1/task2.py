@@ -90,7 +90,7 @@ def extract_features(directory):
 
 # if __name__ == '__main__':
 # 提取所有图像的特征，保存在一个文件中, 大约一小时的时间，最后的文件大小为127M
-directory = '.\dataset\\vgg16\\image_test'
+directory = 'dataset\\vgg16\\image_test'
 filepath = os.path.join('dataset\\vgg16\\', "vgg16_exported.json")
 os.path.abspath(filepath)
 os.getcwd()
