@@ -6,7 +6,7 @@ from pickle import dump
 from os import listdir
 from keras.models import Model
 import keras
-import sys
+import sys,os
 
 
 def load_vgg16_model():
@@ -14,12 +14,12 @@ def load_vgg16_model():
     # Returns
         创建的网络模型 model
     """
-    jason_file = open(sys.path.join("..\\dataset", "vgg16_exported.jason"))
-    jason = jason_file.read()
-    jason_file.close()
+    json_file = open(os.path.join("dataset\\vgg16\\", "vgg16_exported.json"))
+    json = json_file.read()
+    json_file.close()
 
-    model = model_from_json(jason)
-    model.load_weight(sys.path.join("..\\dataset", "vgg16_exported.h5"))
+    model = model_from_json(json)
+    model.load_weights(os.path.join("dataset\\vgg16\\", "vgg16_exported.h5"))
 
     return model
 
@@ -40,11 +40,12 @@ def preprocess_input(x):
         for twoDim in oneDim:
             index = 0
             for rgb in twoDim:
-                twoDim[index] = np.array([rgb[2], rgb[1], rgb[0]])
+                # 减去对应的均值（这里的均值是vgg16全体图像的均值，非单张图片的均值）
+                twoDim[index] = np.array([rgb[2]-103.939, rgb[1]-116.779, rgb[0]]-123.68)
                 index+=1
 
     return x
-    
+
 def load_img_as_np_array(path, target_size):
     """从给定文件加载图像,转换图像大小为给定target_size,返回32位浮点数numpy数组.
     
@@ -56,6 +57,7 @@ def load_img_as_np_array(path, target_size):
         A PIL Image instance.
     """
     img = pil_image.open(path)
+    img.point()
     img.resize(target_size, pil_image.NEAREST)
     
     return np.asarray(img, dtype=K.floatx())
@@ -66,15 +68,17 @@ def extract_features(directory):
     # for we just want to get the feature, but not the classifiers
     # the last layer just base on the features to get classifiers
     model = load_vgg16_model()
-    model.pop()
-
-    model = Model(input=model.inputs, output=model.output[-1])
+    print("+++++ pop ++++")
+    model.layers.pop()
+    print("+++++ Model ++++")
+    model = Model(input=model.inputs, output=model.layers[-1].output)
     features = dict()
+    print("+++++ extract the feature ++++")
     # extract the feature
     for fn in directory:
-        filename = sys.path.join(directory, fn)
+        filename = os.path.join(directory, fn)
         img_array = load_img_as_np_array(filename, target_size=(224, 224))
-        img_array = img_aray.reshape(1, img_array.shape[0],img_array.shape[1],img_array.shape[2])
+        img_array = img_array.reshape(1, img_array.shape[0],img_array.shape[1],img_array.shape[2])
         img_array = preprocess_input(img_array)
         feature = model.predict(img_array, verbose=0)
 
@@ -84,14 +88,15 @@ def extract_features(directory):
     return features
 
 
-if __name__ == '__main__':
-    # 提取所有图像的特征，保存在一个文件中, 大约一小时的时间，最后的文件大小为127M
-    directory = '..\Flicker8k_Dataset'
-    features = extract_features(directory)
-    print('提取特征的文件个数：%d' % len(features))
-    print(keras.backend.image_data_format())
-    #保存特征到文件
-    dump(features, open('features.pkl', 'wb'))
-
-
-
+# if __name__ == '__main__':
+# 提取所有图像的特征，保存在一个文件中, 大约一小时的时间，最后的文件大小为127M
+directory = '.\dataset\\vgg16\\image_test'
+filepath = os.path.join('dataset\\vgg16\\', "vgg16_exported.json")
+os.path.abspath(filepath)
+os.getcwd()
+os.path.exists(filepath)
+features = extract_features(directory)
+print('提取特征的文件个数：%d' % len(features))
+print(keras.backend.image_data_format())
+#保存特征到文件
+dump(features, open('features.pkl', 'wb'))

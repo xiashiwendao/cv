@@ -1,4 +1,3 @@
-from keras.utils import plot_model
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
@@ -95,7 +94,7 @@ def data_generator(captions, photo_features, tokenizer, max_len):
         max_len: 训练集中的标题最长长度
 
     Returns:
-        generator, 使用yield [[list, 元素为图像特征, list, 元素为输入的图像标题前缀], list, 元素为预期的输出图像标题的下一个单词]
+        generator, 使用yield [[list(元素为图像特征), list(元素为输入的图像标题前缀)], list(元素为预期的输出图像标题的下一个单词)]
 
     """
     # loop for ever over images
@@ -111,7 +110,7 @@ def caption_model(vocab_size, max_len):
     """创建一个新的用于给图片生成标题的网络模型
 
     Args:
-        vocab_size: 训练集中标题单词个数
+        vocab_size: 训练集中标题独特单词个数
         max_len: 训练集中的标题最长长度
 
     Returns:
