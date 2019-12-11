@@ -41,10 +41,12 @@ def preprocess_input(x):
             index = 0
             for rgb in twoDim:
                 # 减去对应的均值（这里的均值是vgg16全体图像的均值，非单张图片的均值）
-                twoDim[index] = np.array([rgb[2]-103.939, rgb[1]-116.779, rgb[0]]-123.68)
+                twoDim[index] = np.array([rgb[2]-103.939, rgb[1]-116.779, rgb[0]-123.68])
                 index+=1
 
     return x
+
+
 
 def load_img_as_np_array(path, target_size):
     """从给定文件加载图像,转换图像大小为给定target_size,返回32位浮点数numpy数组.
@@ -57,10 +59,9 @@ def load_img_as_np_array(path, target_size):
         A PIL Image instance.
     """
     img = pil_image.open(path)
-    img.point()
-    img.resize(target_size, pil_image.NEAREST)
+    img_resize = img.resize(target_size, pil_image.NEAREST)
     
-    return np.asarray(img, dtype=K.floatx())
+    return np.asarray(img_resize, dtype=K.floatx())
 
 
 def extract_features(directory):
@@ -75,11 +76,13 @@ def extract_features(directory):
     features = dict()
     print("+++++ extract the feature ++++")
     # extract the feature
-    for fn in directory:
+    for fn in os.listdir(directory):
         filename = os.path.join(directory, fn)
+        print("++++ file name is: ", filename, " +++++++++")
         img_array = load_img_as_np_array(filename, target_size=(224, 224))
-        img_array = img_array.reshape(1, img_array.shape[0],img_array.shape[1],img_array.shape[2])
+        img_array = img_array.reshape((1, img_array.shape[0],img_array.shape[1],img_array.shape[2]))
         img_array = preprocess_input(img_array)
+        print("++++ img_array is: ", np.shape(img_array), " +++++++++")
         feature = model.predict(img_array, verbose=0)
 
         id = fn.split('.')[0]
@@ -100,3 +103,7 @@ print('提取特征的文件个数：%d' % len(features))
 print(keras.backend.image_data_format())
 #保存特征到文件
 dump(features, open('features.pkl', 'wb'))
+
+
+aa = np.array([1,2,3])
+aa.shape()
