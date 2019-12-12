@@ -12,7 +12,8 @@ from keras.preprocessing.text import Tokenizer
 def create_tokenizer():
 
     """
-    根据训练数据集中图像名，和其对应的标题，生成一个tokenizer
+    根据训练数据集中图像名，和其对应的标题，生成一个tokenizer,作为LSTM的输入/输出必须是数字，所以需要我们使用
+    字典数据类型来存储文字和数字对应关系。
     :return: 生成的tokenizer
     https://keras-cn.readthedocs.io/en/latest/legacy/preprocessing/text/#tokenizer
     """
@@ -25,6 +26,18 @@ def create_tokenizer():
     tokenizer.fit_on_texts(lines)
 
     return tokenizer
+
+
+def test_create_token():
+    tokenizer = Tokenizer()
+    lines = ['this is good', 'that is a cat']
+    tokenizer.fit_on_texts(lines)
+
+    results = tokenizer.texts_to_sequences(['cat is good'])
+    print(results)
+    # you will see the last three word (they are the same) has the same values for the two results
+    results = tokenizer.texts_to_sequences(['that cat is good'])
+    print(results)
 
 
 def create_input_data_for_one_image(seq, photo_feature, max_length, vocab_size):
