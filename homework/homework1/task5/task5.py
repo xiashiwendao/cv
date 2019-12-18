@@ -47,27 +47,62 @@ def generate_caption(model, tokenizer, photo_feature, max_length = 40):
 def generate_caption_run():
     image_file = 'Flickr_8k.testImages.txt'
     ids = util.load_ids(image_file)
-    features = util.load_photo_features('feature.pkl', ids)
+    features = util.load_photo_features('features.pkl', ids)
 
-    nlp_model = load_model('model1.h5')
-    tokenizer = load(open('tokenizer.plk', 'rb'))
+    nlp_model = load_model('model_19.h5')
+    tokenizer = load(open('tokenizer.pkl', 'rb'))
 
-    generate_caption(nlp_model, tokenizer, features['3596131692_91b8a05606'], 40)
+    caption = generate_caption(nlp_model, tokenizer, features['3596131692_91b8a05606'], 40)
+
+    return caption
+
 
 
 
 def evluate_test():
     from nltk.translate.bleu_score import corpus_bleu
-    references = [[['there', 'is','a','cat','and','a','dog']]]
+    references = [[['1', '2','3','4','5','6','7'],['there', 'is','a','cat','and','a','dog']]]
     candidates = [['there', 'is', 'a', 'cat', 'and','a','pig']]
     score = corpus_bleu(references, candidates, weights=(1,0,0,0))
     print(score)
 
 evluate_test()
 
-
-
 def evaluate_model(model, captions, photo_features, tokenizer, max_length = 40):
+    actuals, predicts = list(), list()
+    for key, caption_list in captions.items():
+        refferences = [d.split() for d in caption_list]
+        actuals.append(refferences)
+        photo_feature = photo_features[key]
+        predict = generate_caption(model, tokenizer, photo_feature, max_length)
+        predicts.append(predict)
+
+    bleu1 = corpus_bleu(actuals, predicts, weights=(1.0, 0, 0, 0))
+    bleu2 = corpus_bleu(actuals, predicts, weights=(0.5, 0.5, 0, 0))
+    bleu3 = corpus_bleu(actuals, predicts, weights=(0.3, 0.3, 0.3, 0))
+    bleu4 = corpus_bleu(actuals, predicts, weights=(0.25, 0.25, 0.25, 0.25))
+
+    return bleu1, bleu2, bleu3, bleu4
+
+def evaluate_model_run():
+    model = load_model('model_19.h5')
+    features = load(open('features.pkl','rb'))
+    filename = 'Flickr_8k.testImages.txt'
+    test = util.load_ids(filename)
+    # test play as "index" role, just from description.txt and featute.pkl to 
+    # load the special info which define in "index"
+    test_caption = util.load_clean_captions('descriptions.txt', test)
+    test_features = util.load_photo_features('features.pkl', test)
+    tokenizer = load(open('tokenizer.pkl', 'rb'))
+    bleu1, bleu2, bleu3, bleu4 = evaluate_model(model, test_caption, test_features, tokenizer)
+    print('BLEU-1: %f' % bleu1)
+    print('BLEU-2: %f' % bleu2)
+    print('BLEU-3: %f' % bleu3)
+    print('BLEU-4: %f' % bleu4)
+
+
+
+def evaluate_model_my(model, captions, photo_features, tokenizer, max_length = 40):
     """计算训练好的神经网络产生的标题的质量,根据4个BLEU分数来评估
 
     Args:
@@ -105,12 +140,11 @@ def evaluate_model(model, captions, photo_features, tokenizer, max_length = 40):
 
     return score_1, score_2, score_3, score_4
 
-if __name__ == '__main__':
-    print('main!')
-    print(sys.argv)
-
-dict = dict()
-dict["1"] = '1'
-dict["2"] = '2'
-dict["3"] = '3'
-len(dict)
+if __name__ == "__main__":
+    current_path = sys.argv[0]
+    work_path = os.path.abspath(os.path.dirname(current_path)+os.path.sep+".")
+    print("work_path: %s" % work_path)
+    os.chdir(work_path)
+    #caption = generate_caption_run()
+    #print('caption is: %s' % caption)
+    evaluate_model_run()
