@@ -150,3 +150,7 @@ def train():
         model.fit_generator(generator, epochs=1, steps_per_epoch=steps, verbose=1)
         # save model
         model.save('model_' + str(i) + '.h5')
+
+import os, sys
+print(os.getcwd())
+os.ch

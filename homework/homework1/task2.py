@@ -35,17 +35,24 @@ def preprocess_input(x):
     # Returns
         Preprocessed Numpy array.
     """
-    # 预处理图像用于网络输入, 将图像由RGB格式转为BGR格式
-    for oneDim in x:
-        for twoDim in oneDim:
-            index = 0
-            for rgb in twoDim:
-                # 减去对应的均值（这里的均值是vgg16全体图像的均值，非单张图片的均值）
-                twoDim[index] = np.array([rgb[2]-103.939, rgb[1]-116.779, rgb[0]-123.68])
-                index+=1
+    # # 预处理图像用于网络输入, 将图像由RGB格式转为BGR格式
+    # for oneDim in x:
+    #     for twoDim in oneDim:
+    #         index = 0
+    #         for rgb in twoDim:
+    #             # 减去对应的均值（这里的均值是vgg16全体图像的均值，非单张图片的均值）
+    #             twoDim[index] = np.array([rgb[2]-103.939, rgb[1]-116.779, rgb[0]-123.68])
+    #             index+=1
+    
+    # return x
 
-    return x
+    # rbg -> bgr ref: https://www.scivision.co/numpy-image-bgr-to-rgb/
+    bgr = x[..., ::-1]
+    bgr[..., 0] -= 103.939
+    bgr[..., 1] -= 116.779
+    bgr[..., 2] -= 123.68
 
+    return bgr
 
 
 def load_img_as_np_array(path, target_size):
@@ -59,10 +66,14 @@ def load_img_as_np_array(path, target_size):
         A PIL Image instance.
     """
     img = pil_image.open(path)
-    
+    if img.mode != 'RGB':
+        img = img.convert('RGB')
+        print('++++++ RGB Covnerted ++++++')
+    else:
+        print('++++++ NO Need to Covnerted ++++++')
     img_resize = img.resize(target_size, pil_image.NEAREST)
     
-    return np.asarray(img_resize, dtype=np.float)
+    return np.asarray(img_resize, dtype=K.floatx())
 
 
 def extract_features(directory):
@@ -92,32 +103,15 @@ def extract_features(directory):
     return features
 
 
-# if __name__ == '__main__':
-# 提取所有图像的特征，保存在一个文件中, 大约一小时的时间，最后的文件大小为127M
-directory = 'dataset\\vgg16\\image_test'
-filepath = os.path.join('dataset\\vgg16\\', "vgg16_exported.json")
-os.path.abspath(filepath)
-os.getcwd()
-os.path.exists(filepath)
-features = extract_features(directory)
-print('提取特征的文件个数：%d' % len(features))
-print(keras.backend.image_data_format())
-#保存特征到文件
-dump(features, open('features.pkl', 'wb'))
-
-
-aa = np.array([1,2,3])
-aa.shape()
-
-os.getcwd()
-directory = 'dataset\\image_test'
-filename = os.path.join(directory, "2914331767_8574e7703d.jpg")
-img_array = load_img_as_np_array(filename, target_size=(224, 224))
-from matplotlib import pyplot as plt
-plt.imshow(img_array)
-plt.show()
-
-img_array_reshape = img_array.reshape((1, img_array.shape[0],img_array.shape[1],img_array.shape[2]))
-img_array_preprocess = preprocess_input(img_array_reshape)
-plt.imshow(img_array_preprocess)
-plt.show()
+if __name__ == '__main__':
+    # 提取所有图像的特征，保存在一个文件中, 大约一小时的时间，最后的文件大小为127M
+    directory = 'dataset\\vgg16\\image_test'
+    filepath = os.path.join('dataset\\vgg16\\', "vgg16_exported.json")
+    os.path.abspath(filepath)
+    os.getcwd()
+    os.path.exists(filepath)
+    features = extract_features(directory)
+    print('提取特征的文件个数：%d' % len(features))
+    print(keras.backend.image_data_format())
+    #保存特征到文件
+    dump(features, open('features.pkl', 'wb'))
