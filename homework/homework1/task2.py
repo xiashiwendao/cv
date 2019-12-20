@@ -59,9 +59,10 @@ def load_img_as_np_array(path, target_size):
         A PIL Image instance.
     """
     img = pil_image.open(path)
+    
     img_resize = img.resize(target_size, pil_image.NEAREST)
     
-    return np.asarray(img_resize, dtype=K.floatx())
+    return np.asarray(img_resize, dtype=np.float)
 
 
 def extract_features(directory):
@@ -107,3 +108,16 @@ dump(features, open('features.pkl', 'wb'))
 
 aa = np.array([1,2,3])
 aa.shape()
+
+os.getcwd()
+directory = 'dataset\\image_test'
+filename = os.path.join(directory, "2914331767_8574e7703d.jpg")
+img_array = load_img_as_np_array(filename, target_size=(224, 224))
+from matplotlib import pyplot as plt
+plt.imshow(img_array)
+plt.show()
+
+img_array_reshape = img_array.reshape((1, img_array.shape[0],img_array.shape[1],img_array.shape[2]))
+img_array_preprocess = preprocess_input(img_array_reshape)
+plt.imshow(img_array_preprocess)
+plt.show()
