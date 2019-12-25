@@ -4,11 +4,11 @@ from keras.utils import to_categorical
 from numpy import array
 from pickle import load
 import numpy as np
-import homework.homework1.task3
-import homework.homework1.task3.util as util
+import util
 import sys, os
 from keras.preprocessing.text import Tokenizer
 
+current_path = "."
 def create_tokenizer():
 
     """
@@ -18,8 +18,9 @@ def create_tokenizer():
     https://keras-cn.readthedocs.io/en/latest/legacy/preprocessing/text/#tokenizer
     """
 
-    train_image_names = util.load_image_names('homework\\homework1\\task3\\Flickr_8k.trainImages.txt')
-    train_descriptions = util.load_clean_captions('homework\\homework1\\task3\\descriptions.txt', train_image_names)
+    train_image_names = util.load_image_names('{}{}{}'.format(current_path, os.sep, 'Flickr_8k.trainImages.txt'))
+    description_path = '{}{}{}'.format(current_path, os.sep, 'descriptions.txt')
+    train_descriptions = util.load_clean_captions(description_path, train_image_names)
     lines = util.to_list(train_descriptions)
 
     tokenizer = Tokenizer()
@@ -180,12 +181,17 @@ def create_input_data(tokenizer, max_length, descriptions, photos_features, voca
     return array(X1), array(X2), array(y) 
 
 
-from pickle import load
+import pickle
 import numpy as np
-tokenizer = load(open('homework\\homework1\\task3\\tokenizer.pkl', 'rb'))
+tokenizer = load(open('{}{}tokenizer.pkl'.format(current_path, os.sep), 'rb'))
+print(tokenizer.num_words)
+### first time need to create the tokenizer file, later just load is OK
+# tokenizer = create_tokenizer()
+# f = open('tokenizer_temp.pkl','wb')
+# pickle.dump(tokenizer, f)
+# f.close()
 desc = 'startseq cat on table endseq'
 seq = tokenizer.texts_to_sequences([desc])[0]
-print(seq)
 #[2, 660, 6, 229, 3]
 photo_feature = np.array([0.345, 0.57, 0.003, 0.987])
 input1, input2, output = create_input_data_for_one_image(seq, photo_feature, 6, 661)
@@ -194,9 +200,3 @@ print(input1)
 print(input2)
 #[array([0, 0, 0, 0, 0, 2], dtype=int32), array([  0,   0,   0,   0,   2, 660], dtype=int32), array([  0,   0,   0,   2, 660,   6], dtype=int32), array([  0,   0,   2, 660,   6, 229], dtype=int32)]
 print(output[1])
-
-
-a1 = list()
-a1.append(np.array([1,2,3]))
-a1.append(np.array([4,5,6]))
-a1
