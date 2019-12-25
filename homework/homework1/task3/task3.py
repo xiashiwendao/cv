@@ -183,22 +183,22 @@ def create_input_data(tokenizer, max_length, descriptions, photos_features, voca
 import pickle
 import numpy as np
 test_create_token()
-# tokenizer = load(open('{}{}tokenizer.pkl'.format(current_path, os.sep), 'rb'))
 
-# print(tokenizer.word_counts.keys.count())
 ## first time need to create the tokenizer file, later just load is OK
-# tokenizer = create_tokenizer()
-# f = open('tokenizer_temp.pkl','wb')
-# pickle.dump(tokenizer, f)
-# f.close()
+tokenizer = create_tokenizer()
+with open('tokenizer.pkl','wb') as f:
+    pickle.dump(tokenizer, f, pickle.HIGHEST_PROTOCOL)
 
-# desc = 'startseq cat on table endseq'
-# seq = tokenizer.texts_to_sequences([desc])[0]
-# #[2, 660, 6, 229, 3]
-# photo_feature = np.array([0.345, 0.57, 0.003, 0.987])
-# input1, input2, output = create_input_data_for_one_image(seq, photo_feature, 6, 661)
-# print(input1)
-# #[array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987])]
-# print(input2)
-# #[array([0, 0, 0, 0, 0, 2], dtype=int32), array([  0,   0,   0,   0,   2, 660], dtype=int32), array([  0,   0,   0,   2, 660,   6], dtype=int32), array([  0,   0,   2, 660,   6, 229], dtype=int32)]
-# print(output[1])
+with open('{}{}tokenizer.pkl'.format(current_path, os.sep), 'rb') as f:
+    tokenizer = load(f)
+
+desc = 'startseq cat on table endseq'
+seq = tokenizer.texts_to_sequences([desc])[0]
+#[2, 660, 6, 229, 3]
+photo_feature = np.array([0.345, 0.57, 0.003, 0.987])
+input1, input2, output = create_input_data_for_one_image(seq, photo_feature, 6, 662)
+print(input1)
+#[array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987]), array([0.345, 0.57 , 0.003, 0.987])]
+print(input2)
+#[array([0, 0, 0, 0, 0, 2], dtype=int32), array([  0,   0,   0,   0,   2, 660], dtype=int32), array([  0,   0,   0,   2, 660,   6], dtype=int32), array([  0,   0,   2, 660,   6, 229], dtype=int32)]
+print(output[1])
