@@ -117,7 +117,24 @@ def caption_model(vocab_size, max_len):
         用于给图像生成标题的网络模型
 
     """
-    pass
+    input_1 = Input(shape=(4096,))
+    dropout_1 = Dropout(0.5)(input_1)
+    dense_1 = Dense(256)(dropout_1)
+
+    input_2 = Input(shape=(max_len,))
+    embeding_1 = Embedding(vocab_size, 256)(input_2)
+    dropout_2 = Dropout(0.5)(embeding_1)
+    lstm_1 = LSTM(256)(dropout_2)
+
+    add_1 = add([dense_1, lstm_1])
+    dense_2 = Dense(256, activation='relu')(add_1)
+    outputs = Dense(vocab_size, activation='softmax')(dense_2)
+
+    model = Model(input=[input_1, input_2], output=outputs)
+    model.compile(loss='categorical_crossentropy', optimizer='adam')
+    model.summary()
+
+    return model
 
 
 def train():
@@ -149,7 +166,7 @@ def train():
         # fit for one epoch
         model.fit_generator(generator, epochs=1, steps_per_epoch=steps, verbose=1)
         # save model
-        model.save('model_' + str(i) + '.h5')
+        model.save('model' + os.sep + 'model_' + str(i) + '.h5')
 
 import os, sys
 print(os.getcwd())
