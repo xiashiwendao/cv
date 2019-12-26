@@ -164,10 +164,15 @@ def train():
         # create the data generator
         generator = data_generator(train_captions, train_features, tokenizer, max_len)
         # fit for one epoch
+        
+        # generator just return two dimenstion data, the first means X, which has two data
+        # first is the featur of the pic, second is the surfix words; second means Y, the 
+        # word of predict for Next.
+        # At first I don't kown why generator will return three value(feature, surfix, the next word)
+        # but the model just has two input, later I got first tow means X and will go into the model,
+        # the third is means Y, the reponse variance.
         model.fit_generator(generator, epochs=1, steps_per_epoch=steps, verbose=1)
         # save model
         model.save('model' + os.sep + 'model_' + str(i) + '.h5')
 
-import os, sys
-print(os.getcwd())
-os.ch
+train()
