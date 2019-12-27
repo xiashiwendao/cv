@@ -53,7 +53,7 @@ def generate_caption_run():
     print('Photos: test=%d' % len(test_features))
 
     # load the model
-    filename = 'model_1.h5'
+    filename = 'model_19.h5'
     model = load_model(filename)
 
     tokenizer = load(open('tokenizer.pkl', 'rb'))
@@ -106,7 +106,7 @@ def evaluate_model_run():
     test_features = util.load_photo_features('features.pkl', test)
 
     # load the model
-    filename = 'model_1.h5'
+    filename = 'model_19.h5'
     model = load_model(filename)
 
     tokenizer = load(open('tokenizer.pkl', 'rb'))

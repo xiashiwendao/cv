@@ -54,13 +54,10 @@ def generate_caption_run():
 
     caption = generate_caption(nlp_model, tokenizer, features['3596131692_91b8a05606'], 40)
 
-    return caption
-
-
-
+    print('+++++++++++ caption is: ', caption, '+++++++++++++++++++')
 
 def evluate_test():
-    from nltk.translate.bleu_score import corpus_bleu
+    
     references = [[['1', '2','3','4','5','6','7'],['there', 'is','a','cat','and','a','dog']]]
     candidates = [['there', 'is', 'a', 'cat', 'and','a','pig']]
     score = corpus_bleu(references, candidates, weights=(1,0,0,0))
@@ -140,10 +137,11 @@ def evaluate_model_my(model, captions, photo_features, tokenizer, max_length = 4
     return score_1, score_2, score_3, score_4
 
 if __name__ == "__main__":
-    current_path = sys.argv[0]
-    work_path = os.path.abspath(os.path.dirname(current_path)+os.path.sep+".")
-    print("work_path: %s" % work_path)
-    os.chdir(work_path)
+    # current_path = sys.argv[0]
+    # work_path = os.path.abspath(os.path.dirname(current_path)+os.path.sep+".")
+    # print("work_path: %s" % work_path)
+    # os.chdir(work_path)
     #caption = generate_caption_run()
     #print('caption is: %s' % caption)
+    generate_caption_run()
     evaluate_model_run()

@@ -1,3 +1,4 @@
+from keras.utils import plot_model
 from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
@@ -10,8 +11,7 @@ from keras.utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
 import util
 from numpy import array
-import os
-import sys
+
 
 def create_batches(desc_list, photo_features, tokenizer, max_len, vocab_size=7378):
     """从输入的图片标题list和图片特征构造LSTM的一组输入
@@ -95,7 +95,7 @@ def data_generator(captions, photo_features, tokenizer, max_len):
         max_len: 训练集中的标题最长长度
 
     Returns:
-        generator, 使用yield [[list(元素为图像特征), list(元素为输入的图像标题前缀)], list(元素为预期的输出图像标题的下一个单词)]
+        generator, 使用yield [[list, 元素为图像特征, list, 元素为输入的图像标题前缀], list, 元素为预期的输出图像标题的下一个单词]
 
     """
     # loop for ever over images
@@ -111,31 +111,98 @@ def caption_model(vocab_size, max_len):
     """创建一个新的用于给图片生成标题的网络模型
 
     Args:
-        vocab_size: 训练集中标题独特单词个数
+        vocab_size: 训练集中标题单词个数
         max_len: 训练集中的标题最长长度
 
     Returns:
         用于给图像生成标题的网络模型
 
     """
-    input_1 = Input(shape=(4096,))
-    dropout_1 = Dropout(0.5)(input_1)
-    dense_1 = Dense(256)(dropout_1)
-
-    input_2 = Input(shape=(max_len,))
-    embeding_1 = Embedding(vocab_size, 256)(input_2)
-    dropout_2 = Dropout(0.5)(embeding_1)
-    lstm_1 = LSTM(256)(dropout_2)
-
-    add_1 = add([dense_1, lstm_1])
-    dense_2 = Dense(256, activation='relu')(add_1)
-    outputs = Dense(vocab_size, activation='softmax')(dense_2)
-
-    model = Model(inputs=[input_1, input_2], outputs=outputs)
+    # feature extractor model
+    inputs1 = Input(shape=(4096,))
+    fe1 = Dropout(0.5)(inputs1)
+    fe2 = Dense(256, activation='relu')(fe1)
+    # sequence model
+    inputs2 = Input(shape=(max_len,))
+    se1 = Embedding(vocab_size, 256, mask_zero=True)(inputs2)
+    se2 = Dropout(0.5)(se1)
+    se3 = LSTM(256)(se2)
+    # decoder model
+    decoder1 = add([fe2, se3])
+    decoder2 = Dense(256, activation='relu')(decoder1)
+    outputs = Dense(vocab_size, activation='softmax')(decoder2)
+    # tie it together [image, seq] [word]
+    model = Model(inputs=[inputs1, inputs2], outputs=outputs)
+    # compile model
     model.compile(loss='categorical_crossentropy', optimizer='adam')
+    # summarize model
     model.summary()
-
+    #plot_model(model, to_file='model.png', show_shapes=True)
     return model
+
+
+def caption_model_check():
+    model = caption_model(7378, 40)
+    if model is None:
+        return False, 'generated model is None'
+
+    import keras
+
+    if model.inputs[0].shape[1] != 4096:
+        return False, 'input1 does not have have the input_shape of (4096,)'
+
+    if model.inputs[1].shape[1] != 40:
+        return False, 'input1 does not have have the input_shape of (40,)'
+
+    if len(model.layers) != 10:
+        return False, 'the number of layers is wrong'
+
+    if model.output_shape != (None, 7378):
+        return False, 'the output_shape is not 7378'
+
+    if not isinstance(model.layers[2], keras.layers.Embedding):
+        return False, 'missing Embedding layer or the layer is not in the correct position'
+
+    if model.layers[2].output_shape != (None, 40, 256):
+        return False, 'the output_shape of Embedding layer is wrong'
+
+    if not isinstance(model.layers[3], keras.layers.core.Dropout):
+        return False, 'missing dropout layer or the layer is not in the correct position'
+
+    if not isinstance(model.layers[4], keras.layers.core.Dropout):
+        return False, 'missing dropout layer or the layer is not in the correct position'
+
+    if not isinstance(model.layers[5], keras.layers.core.Dense):
+        return False, 'missing Dense layer or the layer is not in the correct position'
+
+    if model.layers[5].output_shape != (None, 256):
+        return False, 'the Dense layer (before the LSTM) output_shape is not 256'
+
+    if not isinstance(model.layers[6], keras.layers.recurrent.LSTM):
+        return False, 'missing LSTM layer or the layer is not in the correct position'
+
+    if model.layers[6].output_shape != (None, 256):
+        return False, 'the LSTM output_shape is not 256'
+
+    if model.layers[7].output_shape != (None, 256):
+        return False, 'the merge.Add layer output_shape is not 256'
+
+    if model.layers[7].input_shape != [(None, 256), (None, 256)]:
+        return False, 'the merge.Add layer input_shape is not [(None, 256), (None, 256)]'
+
+    if not isinstance(model.layers[8], keras.layers.core.Dense):
+        return False, 'the second to last layer is not Dense layer'
+
+    if model.layers[8].output_shape != (None, 256):
+        return False, 'the second to last layer output_shape is not 256'
+
+    if not isinstance(model.layers[9], keras.layers.core.Dense):
+        return False, 'the second to last layer is not Dense layer'
+
+    if model.layers[9].output_shape != (None, 7378):
+        return False, 'the last layer output_shape is not 7378'
+
+    return True, 'passed'
 
 
 def train():
@@ -159,21 +226,24 @@ def train():
     # define the model
     model = caption_model(vocab_size, max_len)
     # train the model, run epochs manually and save after each epoch
-    epochs = 5
+    epochs = 20
     steps = len(train_captions)
     for i in range(epochs):
         # create the data generator
         generator = data_generator(train_captions, train_features, tokenizer, max_len)
         # fit for one epoch
-        
-        # generator just return two dimenstion data, the first means X, which has two data
-        # first is the featur of the pic, second is the surfix words; second means Y, the 
-        # word of predict for Next.
-        # At first I don't kown why generator will return three value(feature, surfix, the next word)
-        # but the model just has two input, later I got first tow means X and will go into the model,
-        # the third is means Y, the reponse variance.
         model.fit_generator(generator, epochs=1, steps_per_epoch=steps, verbose=1)
         # save model
-        model.save('model' + os.sep + 'model_' + str(i) + '.h5')
+        model.save('model_' + str(i) + '.h5')
 
-train()
+
+if __name__ == '__main__':
+    import traceback
+
+    try:
+        result = caption_model_check()
+        print('result is:' + str(result))
+    except:  # catch *all* exceptions
+        print(traceback.format_exc())
+
+    train()
