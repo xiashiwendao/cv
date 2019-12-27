@@ -172,7 +172,13 @@ def train():
         # At first I don't kown why generator will return three value(feature, surfix, the next word)
         # but the model just has two input, later I got first tow means X and will go into the model,
         # the third is means Y, the reponse variance.
+
+        # Don't need fear the generator will be executed forever, for the super-parameter epoches & steps_per_epoch
+        # has limited the time of invoking generator, which is epochs * steps_per_epoch
+
+        # Generator, is magical!
         model.fit_generator(generator, epochs=1, steps_per_epoch=steps, verbose=1)
+        
         # save model
         model.save('model' + os.sep + 'model_' + str(i) + '.h5')
 
