@@ -66,7 +66,7 @@ def evluate_test():
     score = corpus_bleu(references, candidates, weights=(1,0,0,0))
     print(score)
 
-evluate_test()
+#evluate_test()
 
 def evaluate_model(model, captions, photo_features, tokenizer, max_length = 40):
     actuals, predicts = list(), list()
@@ -86,7 +86,6 @@ def evaluate_model(model, captions, photo_features, tokenizer, max_length = 40):
 
 def evaluate_model_run():
     model = load_model('model_19.h5')
-    features = load(open('features.pkl','rb'))
     filename = 'Flickr_8k.testImages.txt'
     test = util.load_ids(filename)
     # test play as "index" role, just from description.txt and featute.pkl to 

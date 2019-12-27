@@ -10,7 +10,8 @@ from keras.utils import to_categorical
 from keras.preprocessing.sequence import pad_sequences
 import util
 from numpy import array
-
+import os
+import sys
 
 def create_batches(desc_list, photo_features, tokenizer, max_len, vocab_size=7378):
     """从输入的图片标题list和图片特征构造LSTM的一组输入
