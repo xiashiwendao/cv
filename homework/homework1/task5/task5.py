@@ -72,7 +72,7 @@ def evaluate_model(model, captions, photo_features, tokenizer, max_length = 40):
         actuals.append(refferences)
         photo_feature = photo_features[key]
         predict = generate_caption(model, tokenizer, photo_feature, max_length)
-        predicts.append(predict)
+        predicts.append(predict.split())
 
     bleu1 = corpus_bleu(actuals, predicts, weights=(1.0, 0, 0, 0))
     bleu2 = corpus_bleu(actuals, predicts, weights=(0.5, 0.5, 0, 0))

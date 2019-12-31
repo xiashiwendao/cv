@@ -21,6 +21,7 @@ plt.show()
 
 from PIL import ImageOps
 # ? tell me what is the difference from Image.fromarray(img3) to numpy(img3)
+# ! Image.fromarray just handler the data which type is array(must first convert to np.array)
 img_eq = ImageOps.equalize(Image.fromarray(img3))
 fig = plt.figure(figsize=(12, 6))
 a = fig.add_subplot(1,2,1)
