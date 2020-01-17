@@ -29,3 +29,15 @@ def bb():
     return external_var + "hello"
 
 external_var = "ok, "
+bb()
+
+def bb2():
+    def cc():
+        return external_var
+    
+    ret = cc()
+    return ret + "hello2"
+
+external_var = "ok, "
+bb2()
+

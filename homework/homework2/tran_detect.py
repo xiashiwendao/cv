@@ -1,5 +1,8 @@
 import math
 import cv2
+from PIL import Image
+import numpy as np
+from matplotlib import image as mpimg
 
 def grayscale(img):
     '''灰度变换'''
@@ -19,7 +22,7 @@ def median_blur(img, kernel_size):
 
 def region_of_interest(img, vertices):
     '''标注出来感兴趣的区域，边缘检测只是关注感兴趣的图像区域'''
-    mask = np.zeros(img)
+    mask = np.zeros_like(img)
     
     if(img.shape[1] >2):
         channel_count = img.shape[2]
@@ -33,3 +36,11 @@ def region_of_interest(img, vertices):
     return masked_img
 
 
+
+def test_masked_img():
+    img = mpimg.imread('dataset\\edge_detect\\edgeDetect.jpg')
+    print(img.shape)
+    vertices = np.array([[(0, img.shape[0]), (10, 10), (20, 20), (img[1], img[0])]], dtype=np.int32)
+    region_of_interest(img, vertices)
+
+test_masked_img()
