@@ -47,7 +47,7 @@ model.__dict__
 
 model2 = RandomForestClassifier(max_depth=9999)
 model2.__dict__
-=======
+
 import numpy as np
 lst = [i for i in range(300)]
 print(lst)
@@ -90,5 +90,3 @@ def bb2():
 
 external_var = "ok, "
 bb2()
-
->>>>>>> 26b582199e1d0f63fc73a17c62eb8fd21283fb6c
