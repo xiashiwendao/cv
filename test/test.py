@@ -90,3 +90,4 @@ def bb2():
 
 external_var = "ok, "
 bb2()
+
