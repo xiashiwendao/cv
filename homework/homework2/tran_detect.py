@@ -98,8 +98,8 @@ def draw_lines_extrapolated(img, lines, color=[255, 0, 0], thickness=10):
     slopes = slopes[~np.isinf(slopes)]
     slopes = slopes[~np.isnan(slopes)]
     # 0.5是经验值
-    left_lines = lines[slopes < -0.5]
-    right_lines = lines[slopes > 0.5]
+    left_lines = lines[slopes < -0.5] #左边车道斜率为负
+    right_lines = lines[slopes > 0.5] # 右边车道斜率为正
     left_slope = slopes[slopes < -0.5]
     right_slope = slopes[slopes > 0.5]
 
@@ -127,12 +127,56 @@ def draw_lines_extrapolated(img, lines, color=[255, 0, 0], thickness=10):
     prev_right_avg_m = right_avg_m
     prev_left_b = left_b
     prev_right_b = right_b
-
+    # 根据斜率和截距，计算对应的x，y值
     left_x1, left_x2 = get_x_intercept(y_1 = y_min, y2 = imgshape[0], slope=left_avg_m, b=left_b)
     right_x1, right_x2 = get_x_intercept(y_1=y_min, y2=imgshape[0], slope=right_avg_m, b=right_b)
 
+    # 求累计平均面积
+    global prev_left_x1
+    global prev_left_x2
+    global prev_right_x1
+    global prev_right_x2
+
+    if prev_left_x1 !=0 or prev_left_x2 !=0 or prev_right_x1 or prev_right_x2 != 0:
+        alpha = 0.2
+
+        left_x1_new = math.floor((alpha)*left_x1 + (1-alpha)*prev_left_x1)
+        left_x2_new = math.floor((alpha)*left_x2 + (1-alpha)*prev_left_x2)
+        right_x1_new = math.floor((alpha)*right_x1 + (1-alpha)*prev_right_x1)
+        right_x2_new = math.floor((alpha)*right_x2 + (1-alpha)*prev_right_x2)
+        prev_left_x1 = left_x1_new
+        prev_left_x2 = left_x2_new
+        prev_right_x1 = right_x1_new
+        prev_right_x2 = right_x2_new
+    else:
+        left_x1_new = left_x1
+        left_x2_new = left_x2
+        right_x1_new = right_x1
+        right_x2_new = right_x2
+
+        prev_left_x1 = left_x1_new
+        prev_left_x2 = left_x2_new
+        prev_right_x1 = right_x1_new
+        prev_right_x2 = right_x2_new
+
+    left_line = np.array([left_x1_new, y_min, left_x2_new, imgshape[0]], dtype=np.int32)
+    right_line = np.array([right_x1_new, y_min, right_x2_new, imgshape[0]], dtype=np.int32)
+
+    if keep_prev_left:
+        left_line = prev_left_line
+        left_x1_new = prev_left_x1
+        left_x2_new = prev_left_x2
+    if keep_prev_right:
+        right_line = prev_right_line
+        right_x1_new = prev_right_x1
+        right_x2_new = prev_right_x2
+
+    cv2.line(img, (int(left_x1_new), int(y_min), (int(left_x2_new), imgshape[0]), color, thickness))
+    cv2.line(img, (int(right_x1_new), int(y_min), (int(right_x2_new), imgshape[0]), color, thickness))
 
 
+
+        
 
 
 img_mask = test_masked_img()
