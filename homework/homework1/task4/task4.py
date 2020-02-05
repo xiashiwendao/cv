@@ -120,7 +120,7 @@ def caption_model(vocab_size, max_len):
     """
     input_1 = Input(shape=(4096,))
     dropout_1 = Dropout(0.5)(input_1)
-    dense_1 = Dense(256)(dropout_1)
+    dense_1 = Dense(256, activation='relu')(dropout_1)
 
     input_2 = Input(shape=(max_len,))
     embeding_1 = Embedding(vocab_size, 256)(input_2)
@@ -180,6 +180,6 @@ def train():
         model.fit_generator(generator, epochs=1, steps_per_epoch=steps, verbose=1)
         
         # save model
-        model.save('model' + os.sep + 'model_' + str(i) + '.h5')
+        model.save('model' + os.sep + 'model_my' + str(i) + '.h5')
 
 train()

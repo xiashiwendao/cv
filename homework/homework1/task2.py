@@ -14,12 +14,13 @@ def load_vgg16_model():
     # Returns
         创建的网络模型 model
     """
-    json_file = open(os.path.join("dataset\\vgg16\\", "vgg16_exported.json"))
+    basePath = 'dataset{}vgg16{}'.format(os.sep, os.sep)
+    json_file = open(os.path.join(basePath, "vgg16_exported.json"))
     json = json_file.read()
     json_file.close()
 
     model = model_from_json(json)
-    model.load_weights(os.path.join("dataset\\vgg16\\", "vgg16_exported.h5"))
+    model.load_weights(os.path.join(basePath, "vgg16_exported.h5"))
 
     return model
 
@@ -68,9 +69,7 @@ def load_img_as_np_array(path, target_size):
     img = pil_image.open(path)
     if img.mode != 'RGB':
         img = img.convert('RGB')
-        print('++++++ RGB Covnerted ++++++')
-    else:
-        print('++++++ NO Need to Covnerted ++++++')
+        
     img_resize = img.resize(target_size, pil_image.NEAREST)
     
     return np.asarray(img_resize, dtype=K.floatx())
@@ -90,11 +89,11 @@ def extract_features(directory):
     # extract the feature
     for fn in os.listdir(directory):
         filename = os.path.join(directory, fn)
-        print("++++ file name is: ", filename, " +++++++++")
+        #print("++++ file name is: ", filename, " +++++++++")
         img_array = load_img_as_np_array(filename, target_size=(224, 224))
         img_array = img_array.reshape((1, img_array.shape[0],img_array.shape[1],img_array.shape[2]))
         img_array = preprocess_input(img_array)
-        print("++++ img_array is: ", np.shape(img_array), " +++++++++")
+        # print("++++ img_array is: ", np.shape(img_array), " +++++++++")
         feature = model.predict(img_array, verbose=0)
 
         id = fn.split('.')[0]
@@ -105,8 +104,8 @@ def extract_features(directory):
 
 if __name__ == '__main__':
     # 提取所有图像的特征，保存在一个文件中, 大约一小时的时间，最后的文件大小为127M
-    directory = 'dataset\\vgg16\\image_test'
-    filepath = os.path.join('dataset\\vgg16\\', "vgg16_exported.json")
+    directory = 'dataset{}Flicker8k'.format(os.sep)
+    filepath = os.path.join('dataset{}vgg16{}'.format(os.sep, os.sep), "vgg16_exported.json")
     os.path.abspath(filepath)
     os.getcwd()
     os.path.exists(filepath)
