@@ -5,6 +5,7 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
 from keras.layers import Dropout
+from keras.layers.merge import concatenate
 import cv2
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.image import ImageDataGenerator
@@ -60,7 +61,15 @@ def get_model(dropout_rate = 0.0):
     dropout_1 = Dropout(dropout_rate)(pool_1)
     flatten_1 = Flatten()(dropout_1)
 
-    dense_1 = Dense(64, activation='relu')(flatten_1)
+    cv2d_2 = Conv2D(64, (3, 3), padding='same', activation='relu')(dropout_1)
+    pool_2 = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(cv2d_2)
+    cv2d_3 = Conv2D(64, (3, 3), padding='same', activation='relu')(pool_2)
+    dropout_2 = Dropout(dropout_rate)(cv2d_3)
+    flatten_2 = Flatten()(dropout_2)
+
+    con = concatenate([flatten_1, flatten_2])
+
+    dense_1 = Dense(64, activation='relu')(con)
     output = Dense(43, activation='softmax')(dense_1)
     model = Model(inputs=input, outputs=output)
     # compile model
@@ -115,7 +124,7 @@ def evaluate(model, X_test, y_test):
 
 
 def train_model():
-    X_train, y_train = load_traffic_sign_data('./traffic-signs-data/train.p')
+    X_train, y_train = load_traffic_sign_data('dataset\\traffic-signs-data\\train.p')
 
     # Number of examples
     n_train = X_train.shape[0]
@@ -146,5 +155,6 @@ def train_model():
 
 if __name__ == "__main__":
     train_model()
+    #get_model()
 
 
