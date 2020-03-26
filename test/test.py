@@ -91,3 +91,14 @@ def bb2():
 external_var = "ok, "
 bb2()
 
+s1 = 'oliva omg'
+s1[::-1]
+s1[::-1].indices()
+s1[::-1]
+
+import re
+l = [[1,2],[3,4],[5,6]]
+x=[j for i in l for j in i]
+print(x)
+y = for u in x for x in l
+print(y)

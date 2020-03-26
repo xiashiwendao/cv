@@ -5,7 +5,6 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import Dense
 from keras.layers import Dropout
-from keras.layers.merge import concatenate
 import cv2
 from sklearn.model_selection import train_test_split
 from keras.preprocessing.image import ImageDataGenerator
@@ -13,10 +12,28 @@ from keras.callbacks import ModelCheckpoint
 from keras import utils
 from keras.models import load_model
 from util import *
-
-
+from network import *
 np.random.seed(23)
 
+def get_model(dropout_rate = 0.0):
+    input_shape = (32, 32, 1)
+
+    input = Input(shape=input_shape)
+    cv2d_1 = Conv2D(64, (3, 3), padding='same', activation='relu')(input)
+    pool_1 = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(cv2d_1)
+    dropout_1 = Dropout(dropout_rate)(pool_1)
+    flatten_1 = Flatten()(dropout_1)
+
+    dense_1 = Dense(64, activation='relu')(flatten_1)
+    output = Dense(43, activation='softmax')(dense_1)
+    model = Model(inputs=input, outputs=output)
+    # compile model
+    model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # summarize model
+    model.summary()
+    return model
+
+# 将图像处理为
 def preprocess_features(X):
     # convert from RGB to YUV
     X = np.array([np.expand_dims(cv2.cvtColor(rgb_img, cv2.COLOR_RGB2YUV)[:, :, 0], 2) for rgb_img in X])
@@ -61,15 +78,7 @@ def get_model(dropout_rate = 0.0):
     dropout_1 = Dropout(dropout_rate)(pool_1)
     flatten_1 = Flatten()(dropout_1)
 
-    cv2d_2 = Conv2D(64, (3, 3), padding='same', activation='relu')(dropout_1)
-    pool_2 = MaxPooling2D(pool_size=(2, 2), strides=(2, 2))(cv2d_2)
-    cv2d_3 = Conv2D(64, (3, 3), padding='same', activation='relu')(pool_2)
-    dropout_2 = Dropout(dropout_rate)(cv2d_3)
-    flatten_2 = Flatten()(dropout_2)
-
-    con = concatenate([flatten_1, flatten_2])
-
-    dense_1 = Dense(64, activation='relu')(con)
+    dense_1 = Dense(64, activation='relu')(flatten_1)
     output = Dense(43, activation='softmax')(dense_1)
     model = Model(inputs=input, outputs=output)
     # compile model
@@ -123,8 +132,8 @@ def evaluate(model, X_test, y_test):
     return accuracy
 
 
-def train_model():
-    X_train, y_train = load_traffic_sign_data('dataset\\traffic-signs-data\\train.p')
+def train_model(model):
+    X_train, y_train = load_traffic_sign_data('./traffic-signs-data/train.p')
 
     # Number of examples
     n_train = X_train.shape[0]
@@ -148,13 +157,18 @@ def train_model():
                                                                 test_size=VAL_RATIO,
                                                                 random_state=0)
 
-    model = get_model(0.0)
+    # model = get_model(0.0)
     image_generator = get_image_generator()
     train(model, image_generator, X_train_norm, y_train, X_val_norm, y_val)
 
-
 if __name__ == "__main__":
-    train_model()
-    #get_model()
-
+    # model = get_model(0.0)
+    # train_model()
+    # X_train, y_train = load_traffic_sign_data('./traffic-signs-data/train.p')
+    # show_random_samples(X_train, y_train, 10)
+    # get_model().summary()
+    # model = get_vgg_model()
+    # model = get_resnet_model()
+    model = get_densenet_model()
+    train_model(model)
 
